@@ -1,3 +1,4 @@
+from pprint import pprint
 # helper function to parse the input into interval and ingredient lists
 def read_input(path: str) -> tuple[list[list[str]], int]:
     grid = []
@@ -19,20 +20,22 @@ def read_input(path: str) -> tuple[list[list[str]], int]:
 
 
 def solution(grid: list[list[str]], start_col: int) -> int:
-    # recursive helper to find # of total timelines from a given row and column
-    def get_total_timelines(r: int, c: int) -> int:
-        # make sure we are in bounds
-        if c >= len(grid[0]) or c < 0:
-            return 0
-        if r + 1 >= len(grid):
-            return 1
-        if grid[r+1][c] != '^':
-            return get_total_timelines(r+1, c)
-        else:
-            return get_total_timelines(r+1, c-1) + get_total_timelines(r+1, c+1)
+    # include padding on the left and right sides
+    table = [[0] * (len(grid[0])+2) for i in range(len(grid))]
+    to_add = [0 if i in [0, len(grid[0])+1] else 1 for i in range(len(grid[0])+2)]
+    table[-1] = to_add
+    # print(table)
+    # populate the table with appropriate values, bottom up
+    for r in range(len(grid)-2, -1, -1):
+        for c in range(len(grid[0])):
+            # use c+1 to avoid padding in the list
+            local = c+1
+            table[r][local] = table[r+1][local] if grid[r+1][c] != '^' else (table[r+1][local-1] + table[r+1][local+1])
 
-
-    return get_total_timelines(0, start_col)
+    # return get_total_timelines(0, start_col)
+    # print("updated table")
+    # pprint(table)
+    return table[0][start_col+1]
 
 if __name__ == "__main__":
     input_path = "input.txt"
