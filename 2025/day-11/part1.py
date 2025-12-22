@@ -1,4 +1,5 @@
 from collections import deque
+from copy import deepcopy
 def read_input(path: str) -> dict:
     adj = {}
     with open(path, 'r', encoding='utf-8') as f:
@@ -15,15 +16,19 @@ def solution(adj) -> int:
     """
     count = 0
     queue = deque()
-    for val in adj["you"]:
-        queue.append(val)
+    for val in adj["svr"]:
+        queue.append((val, {"fft", "dac"}))
     while queue:
-        cur = queue.pop()
+        cur, s = queue.pop()
+        print(f"cur = {cur}, s = {s}")
         if cur == "out":
-            count += 1
+            if not s:
+                count += 1
             continue
+        if cur in s:
+            s.remove(cur)
         for val in adj[cur]:
-            queue.append(val)
+            queue.appendleft((val, deepcopy(s)))
     return count
 
 if __name__ == "__main__":
