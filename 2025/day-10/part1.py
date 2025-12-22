@@ -1,5 +1,4 @@
-from copy import deepcopy
-UPPER_LIMIT = 100
+from collections import deque
 def read_input(path: str) -> list[tuple[int, int]]:
     machines = []
     with open(path, 'r', encoding='utf-8') as f:
@@ -32,41 +31,37 @@ def xor(s1, s2) -> str:
     # pad with correct number of bits
     return bin_res.zfill(len(s1))
 
-def find_fewest_presses(cache, buttons, state, presses, seen) -> int:
-    if presses >= UPPER_LIMIT:
-        return presses
-    if state in cache:
-        print(f"State already in cache: {state}, value = {cache[state]}")
-        return cache[state]
-    min_val = UPPER_LIMIT
-    for button in buttons:
-        new_state = xor(state, button)
-        # prune this branch if we have already seen this state, as this creates a cycle and can't be optimal
-        print(f"xor of {state}, {button} = {new_state}. Seen = {seen}")
-        if new_state in seen:
-            print("Cycle detected, continuing")
+def find_fewest_presses(buttons, target) -> int:
+    """
+    Approach: use bfs
+    """
+    init_state = "0" * len(target)
+    visited = set()
+    locs = deque()
+    locs.appendleft((init_state, 0))
+    while locs:
+        # pop to get the current state
+        state, presses = locs.pop()
+        print(f"Handling state {state}, with {presses}")
+        if state == target:
+            return presses
+        if state in visited:
+            print(f"State {state} found in visited")
             continue
-        if new_state not in cache or cache[new_state] == UPPER_LIMIT:
-            # print(f"State {new_state} not found in cache. Calculating...")
-            # add new state to the cache
-            cache[new_state] = find_fewest_presses(cache, buttons, deepcopy(new_state), presses + 1, deepcopy(seen | {new_state}))
-        min_val = min(min_val, cache[new_state] + 1)
-    cache[state] = min_val
-    print(f"Adding state {state} to cache, value = {min_val}")
-    return cache[state]
+        visited.add(state)
+        for button in buttons:
+            new_state = xor(state, button)
+            print(f"xor({state}, {button}) = {new_state}")
+            locs.appendleft((new_state, presses + 1))
+    return float('inf')
+
 
 def solution(machines) -> int:
-    # approach: try all possible positions, return the minimum from the current spot. BFS.
-    # uses an UPPER LIMIT I defined since recursion could go on forever
     tot = 0
     for i, machine in enumerate(machines):
-        init_state = "0" * len(machine["indicator"])
-        print("init_state:", init_state)
-        cache = {init_state:0}
-        local_tot = find_fewest_presses(cache, machine["buttons"], machine["indicator"], 0, set())
+        local_tot = find_fewest_presses(machine["buttons"], machine["indicator"])
         tot += local_tot
         print(f"total for machine {i}: {local_tot}")
-        print("cache:", cache)
     return tot
 
 if __name__ == "__main__":
