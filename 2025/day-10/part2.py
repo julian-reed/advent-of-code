@@ -1,3 +1,10 @@
+"""
+Note: like day 12, as far as I can tell this solution is correct. However, it is not fully optimized
+and thus does not run in a reasonable amount of time for my full puzzle input. I imagine that a linear
+programming approach could be used to solve within a reasonable time, but as I am unfamilar with that
+technique, and I'm trying to do all of this without looking anything up, I am going to leave my solution
+here.
+"""
 from collections import deque
 def read_input(path: str) -> list[tuple[int, int]]:
     machines = []
